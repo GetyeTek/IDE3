@@ -1,3 +1,4 @@
+FILE: IDE3/index.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -586,7 +587,9 @@
         <!-- CONTEXT TAB -->
         <div id="tab-context" class="tab-content active">
             <div class="header">
-                Context
+                <button class="icon-btn" onclick="window.open(window.location.href, '_blank')" style="width:36px; height:36px; padding:0; border-color:var(--primary); color:var(--primary); flex-shrink:0;" title="Open in New Tab">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                </button>
                 <div class="flex-gap">
                     <button id="btn-context-copy" class="btn-outline" style="width:auto; padding:8px 12px; font-size:12px; color:var(--ai-accent); border-color:var(--ai-accent);" onclick="copySelectedFiles()" title="Copy selected files to clipboard">📋 Copy</button>
                     <button class="btn-outline" style="width:auto; padding:8px 12px; font-size:12px; color:var(--prod); border-color:var(--prod);" onclick="openSendModal()" title="Send selected files to another repo">📤 Send</button>
@@ -615,8 +618,8 @@
                 </div>
             </div>
             <input type="text" class="input-field" placeholder="Fuzzy search files..." style="margin-bottom: 12px;" onkeyup="filterFiles(this.value)">
-            <div class="card" style="padding: 0; overflow: hidden;">
-                <div id="file-list-container" class="file-list">
+            <div class="card" style="padding: 0;">
+                <div id="file-list-container" class="file-list" style="min-height: 200px;">
                     <div style="padding:20px; text-align:center; color:var(--text-muted); font-size: 13px;">Connect to repo to see files.</div>
                 </div>
             </div>
@@ -687,12 +690,11 @@
         <!-- HISTORY TAB -->
         <div id="tab-history" class="tab-content">
             <div class="header">
-                History 
-                <div class="flex-gap">
-                    <button class="icon-btn" onclick="createCheckpoint()" title="Create Checkpoint">🚩 Checkpoint</button>
-                    <button class="icon-btn" style="color:var(--dev); border:none; background:transparent;" onclick="openFavorites()">★ Saved</button>
-                    <button class="icon-btn" onclick="resetHistoryAndSync()">Sync</button>
-                    <button class="icon-btn" onclick="openFilterOverlay('history')">🔍 Filter</button>
+                <div class="flex-gap" style="width: 100%; justify-content: flex-start;">
+                    <button class="icon-btn" style="color:var(--primary); border-color:var(--primary-dim);" onclick="createCheckpoint()" title="Create Checkpoint">🚩 Checkpoint</button>
+                    <button class="icon-btn" style="color:var(--dev); border:none; background:transparent;" onclick="openFavorites()" title="Saved Items">★</button>
+                    <button class="icon-btn" onclick="resetHistoryAndSync()" title="Sync History">↻</button>
+                    <button class="icon-btn" onclick="openFilterOverlay('history')" title="Filter History">🔍</button>
                 </div>
             </div>
              <div class="card" id="history-container" style="padding-bottom:0;"><div style="padding:10px; text-align:center;">Loading...</div></div>
@@ -714,6 +716,20 @@
                     <input type="text" id="setting-func-url" class="input-field" placeholder="https://...supabase.co/functions/v1/ide-brain">
                 </div>
                 <div class="input-group">
+                    <label class="input-label" style="color:var(--ai-accent)">GitHub PAT (Direct Bridge - Egress Saver)</label>
+                    <input type="password" id="setting-gh-token" class="input-field" placeholder="ghp_xxxx...">
+                </div>
+                <div class="flex-gap">
+                    <div class="input-group" style="flex:1">
+                        <label class="input-label">GH Username</label>
+                        <input type="text" id="setting-gh-user" class="input-field" placeholder="GetyeTek">
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <label class="input-label">GH Org Name</label>
+                        <input type="text" id="setting-gh-org" class="input-field" placeholder="MasterEmpire">
+                    </div>
+                </div>
+                <div class="input-group">
                     <div class="flex-between" style="margin-bottom: 6px;">
                         <label class="input-label" style="margin:0">GitHub Repo Name</label>
                         <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
@@ -722,7 +738,7 @@
                         </label>
                     </div>
                     <div style="position: relative; display: flex; align-items: center;">
-                        <input type="text" id="setting-repo-name" class="input-field" placeholder="IDE" style="padding-right: 40px;">
+                        <input type="text" id="setting-repo-name" class="input-field" placeholder="IDE" style="padding-right: 40px;" oninput="autoSwitchRepoConfig(this.value)">
                         <button class="icon-btn" 
                                 style="position: absolute; right: 8px; border: none; background: transparent; color: var(--ai-accent); padding: 4px;"
                                 onclick="fetchRepoList()" title="List Repositories">
@@ -738,10 +754,7 @@
                 
 
                 
-                <label style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom: 12px; padding-top: 10px; border-top: 1px solid var(--border);">
-                    <span style="font-size:13px;">📑 Omit File Headers on Copy</span>
-                    <input type="checkbox" id="setting-omit-headers" style="accent-color:var(--primary); transform:scale(1.2);">
-                </label>
+
                 <label id="preview-toggle-wrap" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom: 12px;">
                     <span style="font-size:13px;">👁️ Show Preview Tab</span>
                     <input type="checkbox" id="setting-show-preview" style="accent-color:var(--primary); transform:scale(1.2);">
@@ -770,6 +783,14 @@
                         <option value="web">🌐 Web App (Preview Enabled)</option>
                         <option value="native">📱 Native App (Preview Disabled)</option>
                     </select>
+                </div>
+                <div id="preview-mode-group" class="input-group">
+                    <label class="input-label">Preview Fetch Strategy</label>
+                    <select id="setting-preview-mode" class="input-field" style="appearance: auto;">
+                        <option value="single">📄 Single File (index.html only)</option>
+                        <option value="full">📦 Entire Project (Slow/Data Intensive)</option>
+                    </select>
+                    <p style="font-size:10px; color:#666; margin-top:5px;">Single file mode drastically reduces Supabase egress bandwidth for self-contained HTML files.</p>
                 </div>
                 <div class="input-group">
                     <label class="input-label">EF Deployment Mode</label>
@@ -809,7 +830,7 @@
                 <div class="flex-gap" style="overflow-x: auto; flex: 1; justify-content: flex-start;">
                     <button class="icon-btn" style="color:var(--dev);" onclick="openFavorites()">★ Saved</button>
                     <button class="icon-btn" style="color:var(--prod); border-color:var(--prod);" onclick="triggerBuild()">▶ Trigger</button>
-                    <button class="icon-btn" onclick="loadWorkflows(true); lastCicdRefresh=0; loadWorkflows(false)">Refresh</button>
+                    <button class="icon-btn" onclick="workflowPage=1; lastCicdRefresh=0; loadWorkflows(false)" title="Refresh Runs">↻ Refresh</button>
                     <button class="icon-btn" onclick="openFilterOverlay('cicd')">🔍 Filter</button>
                 </div>
             </div>
@@ -890,9 +911,11 @@
     <!-- NEW FILE MODAL -->
     <div id="new-file-overlay" class="viewer-overlay">
         <div class="viewer-header">
-            <span class="viewer-title">Create New File</span>
+            <span class="viewer-title">New File / Upload</span>
             <div class="flex-gap">
-                <button class="btn btn-prod" style="width:auto; padding:6px 20px;" onclick="executeCreateFile()">Create</button>
+                <input type="file" id="nf-upload-input" class="hidden" onchange="handleNfFileSelect(this)">
+                <button class="btn-outline" style="width:auto; padding:6px 12px; border-color:var(--ai-accent); color:var(--ai-accent);" onclick="document.getElementById('nf-upload-input').click()">📁 Upload File</button>
+                <button id="nf-submit-btn" class="btn btn-prod" style="width:auto; padding:6px 20px;" onclick="executeCreateFile()">Create</button>
                 <button class="btn-outline" style="width:auto; padding:6px 14px;" onclick="closeNewFileModal()">Cancel</button>
             </div>
         </div>
@@ -923,21 +946,26 @@
 
     <!-- FULLSCREEN FILE VIEWER -->
     <div id="code-viewer" class="viewer-overlay" style="z-index: 210;">
-        <div class="viewer-header">
+        <div class="viewer-header" style="position: relative;">
             <div style="flex:1; display:flex; align-items:center; overflow:hidden;">
                 <span id="viewer-filename" class="viewer-title">filename.js</span>
-                <!-- Hidden Search Bar -->
-                <div id="ace-search-bar" style="display:none; flex:1; width:100%; align-items:center; gap:5px; margin-right:10px;">
-                    <input type="text" id="ace-search-input" class="input-field" placeholder="Search code..." 
-                           style="flex:1; width:100%; min-width:150px; padding:4px 8px; height:32px; font-size:13px;"
-                           onkeyup="if(event.key==='Enter') aceFind('next'); else aceFind(null)">
-                    <button class="menu-btn" style="padding:0 6px; font-size:16px; color:#888; line-height:1; height:32px;" onclick="clearAceSearch()">×</button>
-                    <span id="ace-search-count" style="font-size:11px; color:#888; white-space:nowrap; min-width:60px; text-align:center;"></span>
-                    <button class="icon-btn" onclick="aceFind('prev')">↑</button>
-                    <button class="icon-btn" onclick="aceFind('next')">↓</button>
+            </div>
+            <!-- Expanded Search Bar Overlay -->
+            <div id="ace-search-bar" style="display:none; position:absolute; inset:0; background:var(--card-bg); z-index:100; align-items:center; padding:0 16px; gap:8px; border-bottom: 1px solid var(--primary-dim);">
+                <button class="menu-btn" style="color:var(--text-muted); font-size:20px; padding:0 5px;" onclick="toggleAceSearch()">←</button>
+                <input type="text" id="ace-search-input" class="input-field" placeholder="Search code..." 
+                       style="flex:1; height:36px; font-size:14px; background:var(--input-bg); border-color:var(--border);"
+                       onkeyup="if(event.key==='Enter') aceFind('next'); else aceFind(null)">
+                <span id="ace-search-count" style="font-size:11px; color:var(--text-muted); white-space:nowrap; min-width:40px; text-align:right;"></span>
+                <div class="flex-gap" style="padding-left: 5px; border-left: 1px solid var(--border);">
+                    <button class="icon-btn" style="padding:6px 10px;" onclick="aceFind('prev')">↑</button>
+                    <button class="icon-btn" style="padding:6px 10px;" onclick="aceFind('next')">↓</button>
                 </div>
             </div>
             <div class="flex-gap">
+                <label class="icon-btn" title="Omit Header Prefix" style="padding: 4px 8px; border-color: var(--border);">
+                    <input type="checkbox" id="viewer-omit-toggle" onchange="toggleGlobalOmitHeader(this.checked)" style="width:15px; height:15px; accent-color:var(--ai-accent); cursor:pointer; margin:0;">
+                </label>
                 <button id="viewer-save-btn" class="btn btn-prod" style="display:none; width:auto; padding:6px 12px; font-size:12px;" onclick="saveFileEdits()">Save Changes</button>
                 <button id="viewer-edit-btn" class="icon-btn" onclick="toggleEditMode()" title="Edit File">✎ Edit</button>
                 <button class="icon-btn" id="viewer-action-btn" onclick="copyViewerContent(this)" title="Copy Content">📋</button>
@@ -1281,6 +1309,12 @@
                 <input type="text" id="repo-search" class="input-field" placeholder="Filter repos..." style="max-width:200px; height:32px; font-size:12px;" onkeyup="filterRepoList(this.value)">
             </div>
             <button class="btn-outline" style="width:auto; padding:6px 14px;" onclick="closeRepoSelector()">Close</button>
+        </div>
+        <div id="repo-send-params" style="display:none; padding:10px 16px; background:rgba(217, 70, 239, 0.05); border-bottom:1px solid var(--border);">
+             <div class="flex-gap" style="align-items:center;">
+                 <label class="input-label" style="margin:0; white-space:nowrap;">Target Folder:</label>
+                 <input type="text" id="repo-target-path" class="input-field" placeholder="e.g. imports/ (Leave empty for root)" style="height:32px; font-size:12px;">
+             </div>
         </div>
         <div id="repo-selector-list" style="flex:1; overflow-y:auto; padding:10px;"></div>
     </div>
@@ -1821,21 +1855,51 @@
 
 <script>
   // --- CONFIG & STATE ---
+    const getRepoSpecificConfig = (repoName) => {
+        const map = JSON.parse(localStorage.getItem('conduit_repo_configs') || '{}');
+        return map[repoName] || {};
+    };
+
+    const autoSwitchRepoConfig = (name) => {
+        const cfg = getRepoSpecificConfig(name);
+        if (Object.keys(cfg).length === 0) return;
+
+        if (cfg.projectType) {
+            document.getElementById('setting-project-type').value = cfg.projectType;
+            togglePreviewSettingsVisibility(cfg.projectType);
+        }
+        if (cfg.projectPath !== undefined) {
+            document.getElementById('setting-project-path').value = cfg.projectPath;
+        }
+        if (cfg.previewFetchMode) {
+            document.getElementById('setting-preview-mode').value = cfg.previewFetchMode;
+        }
+        if (cfg.isOrg !== undefined) {
+            document.getElementById('setting-is-org').checked = cfg.isOrg;
+        }
+    };
+
+    const initialRepoName = sessionStorage.getItem('conduit_repoName') || localStorage.getItem('conduit_repoName') || 'IDE';
+    const initialRepoConfig = getRepoSpecificConfig(initialRepoName);
+
     let CONFIG = { 
         funcUrl: localStorage.getItem('conduit_funcUrl') || '',
-        // Project context prefers sessionStorage for tab isolation
-        repoName: sessionStorage.getItem('conduit_repoName') || localStorage.getItem('conduit_repoName') || 'IDE',
-        isOrg: (sessionStorage.getItem('conduit_isOrg') === 'true' || localStorage.getItem('conduit_isOrg') === 'true'),
-        projectPath: sessionStorage.getItem('conduit_projectPath') || localStorage.getItem('conduit_projectPath') || '',
+        repoName: initialRepoName,
+        isOrg: initialRepoConfig.isOrg ?? (sessionStorage.getItem('conduit_isOrg') === 'true' || localStorage.getItem('conduit_isOrg') === 'true'),
+        projectPath: initialRepoConfig.projectPath ?? (sessionStorage.getItem('conduit_projectPath') || localStorage.getItem('conduit_projectPath') || ''),
         autoFix: false,
         autoSanity: false,
         showPreview: localStorage.getItem('conduit_showPreview') !== 'false',
         efDeploymentMode: localStorage.getItem('conduit_ef_mode') || 'default',
-        projectType: (JSON.parse(localStorage.getItem('conduit_repo_configs') || '{}')[sessionStorage.getItem('conduit_repoName') || localStorage.getItem('conduit_repoName') || 'IDE']?.projectType) || 'web',
+        projectType: initialRepoConfig.projectType || 'web',
         omitHeaders: localStorage.getItem('conduit_omitHeaders') === 'true',
+        previewFetchMode: initialRepoConfig.previewFetchMode || 'single',
         wasmValidation: localStorage.getItem('conduit_wasm_validation') !== 'false',
         floatingConsole: localStorage.getItem('conduit_floating_console') === 'true',
-        consoleHalf: localStorage.getItem('conduit_console_half') === 'true'
+        consoleHalf: localStorage.getItem('conduit_console_half') === 'true',
+        ghToken: localStorage.getItem('conduit_gh_token') || '',
+        ghUser: localStorage.getItem('conduit_gh_user') || 'GetyeTek',
+        ghOrg: localStorage.getItem('conduit_gh_org') || 'MasterEmpire'
     };
     
     // Global State
@@ -1945,11 +2009,15 @@
 
         // Load Settings into UI
         document.getElementById('setting-func-url').value = CONFIG.funcUrl;
+        document.getElementById('setting-gh-token').value = CONFIG.ghToken;
+        document.getElementById('setting-gh-user').value = CONFIG.ghUser;
+        document.getElementById('setting-gh-org').value = CONFIG.ghOrg;
         document.getElementById('setting-repo-name').value = CONFIG.repoName;
         document.getElementById('setting-is-org').checked = CONFIG.isOrg;
         document.getElementById('setting-project-path').value = CONFIG.projectPath;
         document.getElementById('setting-project-type').value = CONFIG.projectType;
-        document.getElementById('setting-omit-headers').checked = CONFIG.omitHeaders;
+        document.getElementById('setting-preview-mode').value = CONFIG.previewFetchMode;
+        document.getElementById('viewer-omit-toggle').checked = CONFIG.omitHeaders;
         togglePreviewSettingsVisibility(CONFIG.projectType);
 
         document.getElementById('setting-show-preview').checked = CONFIG.showPreview;
@@ -2109,32 +2177,50 @@
      * it attempts to double-escape backslashes that aren't valid JSON control chars.
      */
     function smartJSONParse(jsonString) {
-        try {
-            return JSON.parse(jsonString);
-        } catch (e) {
-            console.warn("Standard JSON parse failed, attempting Robust Auto-Fix...");
-            let fixed = jsonString
-                // 1. Fix backslashes that aren't part of a valid escape sequence
-                .replace(/\\(?!["\\/bfnrtu])/g, "\\\\")
-                // 2. Fix literal newlines inside strings (replace with \n)
-                .replace(/(\n)/g, (match, p1, offset) => {
-                    // Only replace if we are likely inside a quoted string
-                    const before = jsonString.slice(0, offset);
-                    const quoteCount = (before.match(/"/g) || []).length;
-                    return (quoteCount % 2 === 1) ? "\\n" : "\n";
-                });
+        let input = jsonString.trim();
+        
+        // 1. Markdown/Code-block stripping
+        input = input.replace(/^```json\s*/, '').replace(/```$/, '').trim();
 
-            try {
-                const cleanObj = JSON.parse(fixed);
-                document.getElementById('json-input').value = fixed;
-                if (typeof saveState === 'function') saveState();
-                showGlobalToast("✨ Robust Auto-Correction Applied");
-                return cleanObj;
-            } catch (e2) {
-                console.error("Robust fix failed:", e2);
-                throw e; // Throw original error for better debugging
-            }
+        const attemptParse = (str) => {
+            try { return JSON.parse(str); } catch(e) { return null; }
+        };
+
+        // Try native first
+        let result = attemptParse(input);
+        if (result) return result;
+
+        console.warn("Malformed JSON detected. Initiating Structural Healing...");
+
+        // 2. Structural Reconstruction
+        let fixed = input;
+        
+        // Fix missing leading/trailing brackets
+        if (fixed.startsWith('{') && fixed.endsWith('}')) fixed = '[' + fixed + ']';
+        else if (fixed.startsWith('{') && !fixed.startsWith('[')) fixed = '[' + fixed;
+        else if (fixed.endsWith('}') && !fixed.endsWith(']')) fixed = fixed + ']';
+        else if (fixed.startsWith('"action"')) fixed = '[{' + fixed + '}]';
+
+        // 3. Delimiter & Syntax Healing
+        fixed = fixed
+            .replace(/}\s*{/g, '},{')             // Fix missing commas between objects
+            .replace(/,\s*]/g, ']')                // Fix trailing commas
+            .replace(/\\(?!["\\/bfnrtu])/g, "\\\\") // Double-escape illegal backslashes
+            .replace(/(\n)/g, (match, p1, offset) => { // Handle literal newlines in strings
+                const before = fixed.slice(0, offset);
+                const quoteCount = (before.match(/"/g) || []).length;
+                return (quoteCount % 2 === 1) ? "\\n" : "\n";
+            });
+
+        result = attemptParse(fixed);
+        if (result) {
+            document.getElementById('json-input').value = JSON.stringify(result, null, 2);
+            saveState();
+            showGlobalToast("✨ Payload Structures Healed");
+            return result;
         }
+
+        throw new Error("JSON too corrupted for auto-fix. Check brackets/commas manually.");
     }
 
     function b64DecodeUnicode(str) {
@@ -2147,6 +2233,25 @@
         const bytes = new TextEncoder().encode(str);
         const binString = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
         return btoa(binString);
+    }
+
+    async function githubRequest(path, options = {}) {
+        if (!CONFIG.ghToken) throw new Error("GitHub PAT missing in Settings. Cannot use Direct Bridge.");
+        const owner = CONFIG.isOrg ? CONFIG.ghOrg : CONFIG.ghUser;
+        const url = `https://api.github.com/repos/${owner}/${CONFIG.repoName}${path}`;
+        const res = await fetch(url, {
+            ...options,
+            headers: {
+                'Authorization': `token ${CONFIG.ghToken}`,
+                'Accept': 'application/vnd.github.v3+json',
+                ...options.headers
+            }
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(`GitHub API: ${err.message}`);
+        }
+        return res.json();
     }
 
     function base64ToUint8Array(base64) {
@@ -2818,7 +2923,7 @@
         if(!confirm("Execute SQL to enable pg_cron and pg_net extensions?")) return;
         try {
             const sql = "CREATE EXTENSION IF NOT EXISTS pg_cron; CREATE EXTENSION IF NOT EXISTS pg_net;";
-            const res = await fetch("https://xvldfsmxskhemkslsbym.supabase.co/functions/v1/sql-executor", {
+            const res = await fetch(SQL_CONFIG.URL, {
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SQL_CONFIG.ANON, 'apikey': SQL_CONFIG.ANON },
                 body: JSON.stringify({ query: sql })
@@ -2839,6 +2944,9 @@
 
     async function saveSettings() {
         const funcUrl = document.getElementById('setting-func-url').value.trim();
+        const ghToken = document.getElementById('setting-gh-token').value.trim();
+        const ghUser = document.getElementById('setting-gh-user').value.trim();
+        const ghOrg = document.getElementById('setting-gh-org').value.trim();
         const repoName = document.getElementById('setting-repo-name').value.trim() || 'IDE';
         let projectPath = document.getElementById('setting-project-path').value.trim();
         if(projectPath && !projectPath.endsWith('/')) projectPath += '/';
@@ -2850,7 +2958,8 @@
         const wasmValidation = document.getElementById('setting-wasm-validation').checked;
         const efDeploymentMode = document.getElementById('setting-ef-mode').value;
         const projectType = document.getElementById('setting-project-type').value;
-        const omitHeaders = document.getElementById('setting-omit-headers').checked;
+        const previewFetchMode = document.getElementById('setting-preview-mode').value;
+        const omitHeaders = CONFIG.omitHeaders;
         const floatingConsole = document.getElementById('setting-floating-console').checked;
         const consoleHalf = document.getElementById('setting-console-half').checked;
 
@@ -2858,6 +2967,9 @@
         
         // Global Preferences
         localStorage.setItem('conduit_funcUrl', funcUrl);
+        localStorage.setItem('conduit_gh_token', ghToken);
+        localStorage.setItem('conduit_gh_user', ghUser);
+        localStorage.setItem('conduit_gh_org', ghOrg);
         localStorage.setItem('conduit_showPreview', showPreview);
         localStorage.setItem('conduit_wasm_validation', wasmValidation);
         localStorage.setItem('conduit_ef_mode', efDeploymentMode);
@@ -2874,12 +2986,17 @@
 
         // Update Repo-Specific Config Map
         const repoConfigs = JSON.parse(localStorage.getItem('conduit_repo_configs') || '{}');
-        repoConfigs[repoName] = { 
+                repoConfigs[repoName] = {
             projectType, 
             isOrg, 
-            projectPath 
+            projectPath,
+            previewFetchMode
         };
         localStorage.setItem('conduit_repo_configs', JSON.stringify(repoConfigs));
+
+        // Update active CONFIG and UI
+        CONFIG.projectType = projectType;
+        applyPreviewTabVisibility();
 
         // Also update localStorage as a fallback for new tabs
         localStorage.setItem('conduit_repoName', repoName);
@@ -2889,7 +3006,7 @@
         // Save AI Config
         localStorage.setItem('conduit_ai_config', JSON.stringify(window.aiConfig));
 
-        CONFIG = { funcUrl, repoName, projectPath, autoFix, autoSanity, showPreview, isOrg, wasmValidation, efDeploymentMode, floatingConsole, consoleHalf, projectType, omitHeaders };
+        CONFIG = { funcUrl, repoName, projectPath, autoFix, autoSanity, showPreview, isOrg, wasmValidation, efDeploymentMode, floatingConsole, consoleHalf, projectType, omitHeaders, previewFetchMode, ghToken, ghUser, ghOrg };
         
         applyPreviewTabVisibility(); 
         initFloatingHUD();
@@ -2912,7 +3029,6 @@
         if(force && !isAppend) {
             document.getElementById('history-actions-fab').style.display = 'none';
             document.getElementById('history-container').innerHTML = '<div style="padding:10px; text-align:center;">Syncing...</div>';
-            if (updateTerminal) document.getElementById('terminal-list').innerHTML = '<div style="padding:10px; text-align:center; color:#666">Syncing logs...</div>';
         }
         try {
             const res = await fetch(CONFIG.funcUrl, { 
@@ -2961,6 +3077,9 @@
                     document.getElementById('load-more-logs-btn').style.display = 'none';
                 }
             }
+            
+            // NEW: Automatically sync CI/CD runs whenever the IDE state is updated
+            if (force) loadWorkflows(true);
         } catch (e) {
             console.error(e);
             document.getElementById('history-container').innerHTML = `<div style="padding:20px; text-align:center; color:var(--danger);">Failed to sync history: ${e.message}</div>`;
@@ -2971,6 +3090,7 @@
     function resetHistoryAndSync() {
         historyOffset = 0;
         logOffset = 0;
+        workflowPage = 1; // Reset CI/CD pagination
         fetchState(true);
     }
 
@@ -3004,6 +3124,35 @@
         } catch (e) {
             listContainer.innerHTML = `<div style="color:var(--danger); padding:20px;">Error: ${e.message}</div>`;
         }
+    }
+
+    async function refreshFileEntries(paths) {
+        if (!paths || paths.length === 0) return;
+        try {
+            const res = await fetch(CONFIG.funcUrl, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: apiBody({ action: 'fetch', only_paths: paths })
+            });
+            const data = await res.json();
+            const updatedFiles = data.files || [];
+            
+            // Merge into local state
+            updatedFiles.forEach(upd => {
+                const idx = window.repoFiles.findIndex(f => f.path === upd.path);
+                if (idx !== -1) window.repoFiles[idx] = upd;
+                else window.repoFiles.push(upd);
+            });
+
+            // Filter out paths that might have been deleted (returned as non-existent)
+            const returnedPaths = updatedFiles.map(f => f.path);
+            paths.forEach(p => {
+                if (!returnedPaths.includes(p)) {
+                    window.repoFiles = window.repoFiles.filter(f => f.path !== p);
+                }
+            });
+
+            renderFileList(window.repoFiles);
+        } catch (e) { console.warn("Partial metadata refresh failed", e); }
     }
 
     // --- AI CHAT LOGIC ---
@@ -3456,8 +3605,12 @@
             updateTerminalCard(termId, data, payload, true);
 
             if(data.success) {
+                const patchedPaths = payload.filter(p => p.file_path).map(p => p.file_path);
                 if(actionType === 'patch') setTimeout(() => bundleAndPreview(null), 1500);
-                setTimeout(() => { fetchState(false, false); fetchFileList(); }, 1000);
+                setTimeout(() => { 
+                    fetchState(true, true); 
+                    refreshFileEntries(patchedPaths);
+                }, 1000);
             }
         } catch (e) {
             updateTerminalCard(termId, { error: e.message });
@@ -3601,6 +3754,10 @@
         // Ensure we capture the SHA if present
         if (response && response.commit_sha) {
             el.dataset.commitSha = response.commit_sha;
+        }
+        // If database ID returned, update DOM ID to prevent fetchState duplicates
+        if (response && response.log_id) {
+            el.id = 'term-saved-' + response.log_id;
         }
 
         if(response.error) {
@@ -3813,9 +3970,12 @@
             window.PREVIEW_BLOB_URL = null;
         }
 
-        // Critical: Must remove srcdoc attribute entirely for src to take precedence
-        iframe.removeAttribute('srcdoc');
-        iframe.src = url;
+        // Critical: Recreate iframe to prevent srcdoc/src caching bugs on mobile browsers
+        const newIframe = document.createElement('iframe');
+        newIframe.id = 'preview-frame';
+        newIframe.sandbox = "allow-scripts allow-same-origin allow-forms allow-modals allow-popups";
+        newIframe.src = url;
+        iframe.replaceWith(newIframe);
         
         display.innerText = 'External: ' + url;
         console.log("[Preview] Loading external URL:", url);
@@ -3853,19 +4013,58 @@
         if (effectiveRoot) effectiveRoot += '/';
 
         let entryFile = effectiveRoot + 'index.html';
-        const iframe = document.getElementById('preview-frame');
-        iframe.srcdoc = `<div style="color:#666; font-family:sans-serif; text-align:center; padding:20px;">Initializing Environment...</div>`;
+        let iframe = document.getElementById('preview-frame');
+        
+        // Fully recreate iframe to prevent srcdoc/src caching bugs
+        const loaderIframe = document.createElement('iframe');
+        loaderIframe.id = 'preview-frame';
+        loaderIframe.sandbox = "allow-scripts allow-same-origin allow-forms allow-modals allow-popups";
+        loaderIframe.srcdoc = `<div style="color:#666; font-family:sans-serif; text-align:center; padding:20px; margin-top:20px;">Initializing Environment...</div>`;
+        iframe.replaceWith(loaderIframe);
+        iframe = loaderIframe;
 
         const fileCache = {}; window.CURRENT_FILE_CACHE = fileCache;
 
         try {
-            // ONE SINGLE REQUEST to fetch everything in the project scope
-            const bundleRes = await fetch(CONFIG.funcUrl, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: apiBody({ action: 'fetch_project_bundle', project_path: effectiveRoot, ref_sha: sha })
-            });
-            const bundleData = await bundleRes.json();
-            const files = bundleData.files || {};
+            const isSingle = CONFIG.previewFetchMode === 'single';
+            let files = {};
+
+            if (CONFIG.ghToken) {
+                // [DIRECT GH BRIDGE] Bypass Supabase Egress
+                const ref = sha || 'conduit-dev';
+                if (isSingle) {
+                    const targetPath = effectiveRoot + "index.html";
+                    const data = await githubRequest(`/contents/${targetPath}?ref=${ref}`);
+                    if (data.content) files[targetPath] = { content: data.content, sha: data.sha, size: data.size };
+                } else {
+                    // Full Bundle Fetch from GH API
+                    const treeData = await githubRequest(`/git/trees/${ref}?recursive=1`);
+                    const blobs = (treeData.tree || []).filter(f => f.type === "blob" && (!effectiveRoot || f.path.startsWith(effectiveRoot)));
+                    
+                    showGlobalToast(`[GH Bridge] Bundling ${blobs.length} files...`);
+                    
+                    // Parallel Content Fetching
+                    const BATCH_SIZE = 12;
+                    for (let i = 0; i < blobs.length; i += BATCH_SIZE) {
+                        const batch = blobs.slice(i, i + BATCH_SIZE);
+                        const results = await Promise.all(batch.map(async (b) => {
+                             try {
+                                 const data = await githubRequest(`/contents/${b.path}?ref=${ref}`);
+                                 return { path: b.path, content: data.content, sha: data.sha, size: data.size };
+                             } catch (e) { return null; }
+                        }));
+                        results.forEach(r => { if(r) files[r.path] = r; });
+                    }
+                }
+            } else {
+                // [LEGACY] Fetch via Supabase
+                const bundleRes = await fetch(CONFIG.funcUrl, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: apiBody({ action: 'fetch_project_bundle', project_path: effectiveRoot, ref_sha: sha, single_file: isSingle })
+                });
+                const bundleData = await bundleRes.json();
+                files = bundleData.files || {};
+            }
             
             if (Object.keys(files).length === 0) throw new Error(`No files found in scope: ${effectiveRoot}`);
 
@@ -4040,8 +4239,12 @@
             if (window.PREVIEW_BLOB_URL) URL.revokeObjectURL(window.PREVIEW_BLOB_URL);
             window.PREVIEW_BLOB_URL = URL.createObjectURL(finalBlob);
             
-            iframe.removeAttribute('srcdoc');
-            iframe.src = window.PREVIEW_BLOB_URL;
+            // Fully recreate iframe for the final Blob URL to force browser network layer refresh
+            const finalIframe = document.createElement('iframe');
+            finalIframe.id = 'preview-frame';
+            finalIframe.sandbox = "allow-scripts allow-same-origin allow-forms allow-modals allow-popups";
+            finalIframe.src = window.PREVIEW_BLOB_URL;
+            document.getElementById('preview-frame').replaceWith(finalIframe);
 
             if(window.POPOUT_REF && !window.POPOUT_REF.closed) window.POPOUT_REF.location.replace(window.PREVIEW_BLOB_URL);
             document.getElementById('preview-url-display').innerText = sha ? 'Viewing: ' + entry.title : 'Viewing: Live Dev (' + CONFIG.repoName + ')';
@@ -4332,14 +4535,19 @@
             const BATCH_SIZE = 5;
             for (let i = 0; i < filesToProcess.length; i += BATCH_SIZE) {
                 const batch = filesToProcess.slice(i, i + BATCH_SIZE);
-                const batchResults = await Promise.all(batch.map(async (path) => {
+                            const batchResults = await Promise.all(batch.map(async (path) => {
+                let data;
+                if (CONFIG.ghToken) {
+                    data = await githubRequest(`/contents/${path}?ref=conduit-dev`);
+                } else {
                     const res = await fetch(CONFIG.funcUrl, {
                         method: 'POST', headers: {'Content-Type': 'application/json'},
                         body: apiBody({ action: 'preview_file', file_path: path })
                     });
-                    const data = await res.json();
-                    return { path, content: b64DecodeUnicode(data.content || "") };
-                }));
+                    data = await res.json();
+                }
+                return { path, content: b64DecodeUnicode(data.content || "") };
+            }));
 
                 batchResults.forEach(res => {
                     const targetPath = moveFolder ? res.path.replace(oldDir, newDir) : newPath;
@@ -4350,18 +4558,20 @@
 
             closeRenameModal();
 
-            // 2. Load into Patcher
+            // 2. Load into Patcher and EXECUTE
             document.getElementById('json-input').value = JSON.stringify(ops, null, 2);
             saveState();
             
-            // 3. Switch to Patcher
+            // 3. Switch to Patcher and run it immediately
             switchTab('tab-patcher', document.querySelectorAll('.nav-item')[1]);
+            showGlobalToast("🚀 Executing Rename/Move...");
             
-            showGlobalToast("Rename loaded. Review and Test Patch.");
+            // Automatically trigger the patch so it's not "fake"
+            await runPatch('patch');
 
-            // 4. Prompt for AI Healing
+            // 4. Prompt for AI Healing after the patch is confirmed
             setTimeout(() => {
-                if (confirm("File moved! Shall I ask AI to scan and heal imports in other files?")) {
+                if (confirm("Rename complete! Shall I ask AI to scan and heal imports in other files?")) {
                     startNewChat();
                     toggleChat(true);
                     chatHistory.push({ 
@@ -4370,7 +4580,7 @@
                     });
                     processAIResponse();
                 }
-            }, 1000);
+            }, 1500);
 
         } catch (e) {
             alert("Move failed: " + e.message);
@@ -5431,49 +5641,56 @@ async function downloadArtifact(runId) {
         renderDiscoveryList(filtered, mode);
     }
 
-    async function triggerRemoteDeploy(repo, funcName) {
-        if (!confirm(`🚀 Trigger deployment for '${funcName}' inside remote repo '${repo}'?`)) return;
-        
-        showGlobalToast(`Signaling ${repo}...`);
-        try {
-            const res = await fetch(CONFIG.funcUrl, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: apiBody({ 
-                    action: 'trigger_build', 
-                    repo_name: repo, // Target the foreign repo
-                    workflow_id: 'deploy.yml', 
-                    branch: 'conduit-dev', // Assuming standard convention
-                    inputs: { function_name: funcName }
-                })
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                showGlobalToast("✅ Remote deployment triggered!");
-                // Optional: Switch to CI/CD? No, that would require switching repo context.
-            } else {
-                throw new Error(data.error || "Unknown error");
-            }
-        } catch(e) {
-            alert("Remote Deploy Failed: " + e.message);
-        }
-    }
-
     async function importFunction(repo, path, name) {
-        showGlobalToast(`Importing ${name}...`);
+        document.getElementById('discovery-overlay').classList.remove('active');
+        document.getElementById('ef-name').value = name;
+        document.getElementById('ef-code').value = 'Loading...';
+        document.getElementById('ef-status-msg').innerText = 'Importing...';
         try {
             const res = await fetch(CONFIG.funcUrl, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: apiBody({ action: 'preview_file', repo_name: repo, file_path: path })
+                body: JSON.stringify({ 
+                    action: 'preview_file', 
+                    file_path: path, 
+                    repo_name: repo, 
+                    is_org: CONFIG.isOrg, 
+                    ai_config: window.aiConfig 
+                })
             });
             const data = await res.json();
             if (data.content) {
-                document.getElementById('ef-name').value = name;
                 document.getElementById('ef-code').value = b64DecodeUnicode(data.content);
-                document.getElementById('discovery-overlay').classList.remove('active');
+                window.EF_ORIGINAL_SOURCE = ""; 
                 document.getElementById('ef-status-msg').innerText = `Imported from ${repo}. Ready to deploy.`;
             } else throw new Error("Content empty");
         } catch(e) { alert("Import failed: " + e.message); }
+    }
+
+    async function triggerRemoteDeploy(repo, name) {
+        if(!confirm(`Trigger deploy.yml for '${name}' in remote repo '${repo}'?`)) return;
+        showGlobalToast(`🚀 Triggering remote deploy in ${repo}...`);
+        try {
+            const res = await fetch(CONFIG.funcUrl, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    action: 'trigger_build', 
+                    workflow_id: 'deploy.yml', 
+                    branch: 'conduit-dev',
+                    inputs: { function_name: name },
+                    repo_name: repo,
+                    is_org: CONFIG.isOrg,
+                    validate_pre_build: false
+                })
+            });
+            const data = await res.json();
+            if(data.success) {
+                showGlobalToast(`✅ Dispatched remote deploy!`);
+            } else {
+                throw new Error(data.error || "Workflow trigger failed.");
+            }
+        } catch(e) {
+            alert(`Remote Deploy Error: ${e.message}`);
+        }
     }
 
     async function copyJobLogs(jobId, jobName, btn) {
@@ -5692,6 +5909,11 @@ async function downloadArtifact(runId) {
             aceEditorInstance.setOption("showPrintMargin", false);
             aceEditorInstance.setOption("fontSize", "13px");
             aceEditorInstance.setReadOnly(true);
+            // Close search bar if user taps the editor area
+            aceEditorInstance.on("click", () => {
+                const bar = document.getElementById('ace-search-bar');
+                if (bar && bar.style.display !== 'none') toggleAceSearch();
+            });
         }
 
         // Reset Mode & State
@@ -5706,17 +5928,19 @@ async function downloadArtifact(runId) {
         aceEditorInstance.setValue("Loading content...", -1);
         
         try {
-            const res = await fetch(CONFIG.funcUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: apiBody({
-                    action: 'preview_file',
-                    file_path: path
-                })
-            });
-            const data = await res.json();
+            let data;
+            if (CONFIG.ghToken) {
+                // Direct GH Bridge (Egress Saving)
+                data = await githubRequest(`/contents/${path}?ref=conduit-dev`);
+            } else {
+                // Fallback to Supabase (Legacy)
+                const res = await fetch(CONFIG.funcUrl, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: apiBody({ action: 'preview_file', file_path: path })
+                });
+                data = await res.json();
+            }
+
             document.getElementById('viewer-filename').innerText = path;
             
             let mode = "ace/mode/text";
@@ -5807,8 +6031,8 @@ async function downloadArtifact(runId) {
                 originalViewerContent = newContent;
                 saveBtn.style.display = 'none';
                 showGlobalToast("File updated successfully");
-                // Log to terminal via existing state fetch
                 fetchState(false, true);
+                refreshFileEntries([currentViewerPath]);
             } else {
                 throw new Error(data.error || "Save failed");
             }
@@ -5818,6 +6042,12 @@ async function downloadArtifact(runId) {
             saveBtn.disabled = false;
             saveBtn.innerText = "Save Changes";
         }
+    }
+
+    function toggleGlobalOmitHeader(checked) {
+        CONFIG.omitHeaders = checked;
+        localStorage.setItem('conduit_omitHeaders', checked);
+        showGlobalToast(checked ? "Headers Omitted" : "Headers Enabled");
     }
 
     function closeFileViewer() {
@@ -6404,28 +6634,111 @@ async function downloadArtifact(runId) {
         toggleFab(true);
     }
 
+    let nfSelectedBlob = null;
+
+    function handleNfFileSelect(input) {
+        const file = input.files[0];
+        if (!file) return;
+        
+        nfSelectedBlob = file;
+        const pathInput = document.getElementById('nf-path');
+        const currentDir = pathInput.value.substring(0, pathInput.value.lastIndexOf('/') + 1) || CONFIG.projectPath || "";
+        pathInput.value = currentDir + file.name;
+        
+        document.getElementById('nf-content').placeholder = `[File Selected: ${file.name} (${formatBytes(file.size)}) - Text editor disabled]`;
+        document.getElementById('nf-content').value = "";
+        document.getElementById('nf-content').disabled = true;
+        document.getElementById('nf-submit-btn').innerText = "Upload to GitHub";
+    }
+
     async function executeCreateFile() {
         if (isPerformingAction) return;
         const path = document.getElementById('nf-path').value.trim();
         const content = document.getElementById('nf-content').value;
+        const btn = document.getElementById('nf-submit-btn');
 
         if (!path) return showGlobalToast("File path is required", true);
 
+        // SCENARIO 1: Binary/Large File Upload via Direct Bridge
+        if (nfSelectedBlob) {
+            if (!CONFIG.ghToken) return alert("GitHub PAT required in Settings for direct binary uploads.");
+            
+            isPerformingAction = true;
+            btn.innerText = "⏳ Uploading...";
+            btn.disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const base64Content = e.target.result.split(',')[1];
+                    let existingSha = null;
+                    
+                    // Check if file exists to get SHA (required for updates)
+                    try {
+                        const existing = await githubRequest(`/contents/${path}?ref=conduit-dev`);
+                        existingSha = existing.sha;
+                    } catch (err) { /* New file */ }
+
+                    const owner = CONFIG.isOrg ? CONFIG.ghOrg : CONFIG.ghUser;
+                    const url = `https://api.github.com/repos/${owner}/${CONFIG.repoName}/contents/${path}`;
+                    
+                    const res = await fetch(url, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${CONFIG.ghToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: `Conduit: Direct Upload ${path}`,
+                            content: base64Content,
+                            branch: 'conduit-dev',
+                            sha: existingSha
+                        })
+                    });
+
+                    if (!res.ok) throw new Error("GitHub Upload Failed");
+                    
+                    showGlobalToast(`✅ Uploaded: ${path}`);
+                    // Log event to terminal locally
+                    const termId = addTerminalCard(null, { loading: false });
+                    updateTerminalCard(termId, { success: true, message: `Directly uploaded ${path} to GitHub (0 Egress)` }, null, false);
+                    
+                    closeNewFileModal();
+                    refreshFileEntries([path]);
+                } catch (err) {
+                    alert("Upload Error: " + err.message);
+                } finally {
+                    isPerformingAction = false;
+                    btn.disabled = false;
+                }
+            };
+            reader.readAsDataURL(nfSelectedBlob);
+            return;
+        }
+
+        // SCENARIO 2: Standard Text File via Patcher
         const ops = [
             { "action": "comment", "text": `Create new file: ${path}` },
             { "action": "create_file", "file_path": path, "content": content }
         ];
 
         closeNewFileModal();
-        
-        // Push to Patcher for execution
         document.getElementById('json-input').value = JSON.stringify(ops, null, 2);
         saveState();
-        
-        // Automatically trigger the patch
         switchTab('tab-patcher', document.querySelectorAll('.nav-item')[1]);
         runPatch('patch');
     }
+
+    // Reset modal on close
+    const originalCloseNewFileModal = closeNewFileModal;
+    closeNewFileModal = function() {
+        nfSelectedBlob = null;
+        document.getElementById('nf-content').disabled = false;
+        document.getElementById('nf-content').placeholder = "Paste or write code here...";
+        document.getElementById('nf-submit-btn').innerText = "Create";
+        document.getElementById('nf-upload-input').value = "";
+        originalCloseNewFileModal();
+    };
 
     // --- AI SETTINGS LOGIC ---
 
@@ -6617,7 +6930,9 @@ async function downloadArtifact(runId) {
         repoSelectorMode = 'send';
         document.getElementById('repo-selector-title').innerText = "Send to Repository";
         document.getElementById('repo-type-toggle').style.display = 'flex';
-        repoSelectorIsOrg = CONFIG.isOrg; // Default to current mode
+        document.getElementById('repo-send-params').style.display = 'block';
+        document.getElementById('repo-target-path').value = "";
+        repoSelectorIsOrg = CONFIG.isOrg; 
         updateRepoToggleUI();
         fetchRepoList();
     }
@@ -6669,7 +6984,7 @@ async function downloadArtifact(runId) {
                 </div>
                 <div class="model-actions">
                     <button class="btn btn-primary" style="width:auto; padding:4px 12px; font-size:11px;" 
-                        onclick="repoSelectorMode === 'send' ? executeSendFiles('${r.name}', repoSelectorIsOrg) : selectRepo('${r.name}')">
+                        onclick="repoSelectorMode === 'send' ? executeSendFiles('${r.full_name}', repoSelectorIsOrg) : selectRepo('${r.full_name}')">
                         ${repoSelectorMode === 'send' ? '🚀 Send' : 'Select'}
                     </button>
                 </div>
@@ -6682,47 +6997,66 @@ async function downloadArtifact(runId) {
         renderRepoSelector(filtered);
     }
 
-    function selectRepo(name) {
-        document.getElementById('setting-repo-name').value = name;
+    function selectRepo(fullName) {
+        const parts = fullName.split('/');
+        const shortName = parts.length > 1 ? parts[1] : parts[0];
+        const isOrgRepo = fullName.includes('MasterEmpire/');
+
+        document.getElementById('setting-repo-name').value = shortName;
+        document.getElementById('setting-is-org').checked = isOrgRepo;
         
-        // Load known config for this repo if it exists
         const repoConfigs = JSON.parse(localStorage.getItem('conduit_repo_configs') || '{}');
-        if (repoConfigs[name]) {
-            const cfg = repoConfigs[name];
-            if (cfg.projectType) {
-                document.getElementById('setting-project-type').value = cfg.projectType;
-                togglePreviewSettingsVisibility(cfg.projectType);
-            }
-            if (cfg.projectPath !== undefined) {
-                document.getElementById('setting-project-path').value = cfg.projectPath;
-            }
-            showGlobalToast(`Config loaded for: ${name}`);
+        const cfg = repoConfigs[shortName] || {};
+
+        // Sync current state to the selected repo's known config
+        if (cfg.projectType) {
+            CONFIG.projectType = cfg.projectType;
+            document.getElementById('setting-project-type').value = cfg.projectType;
+            togglePreviewSettingsVisibility(cfg.projectType);
+            applyPreviewTabVisibility();
+        }
+        if (cfg.projectPath !== undefined) {
+            CONFIG.projectPath = cfg.projectPath;
+            document.getElementById('setting-project-path').value = cfg.projectPath;
         }
 
+        // Always update isOrg based on the actual repo selected
+        CONFIG.isOrg = isOrgRepo;
+
         closeRepoSelector();
-        showGlobalToast(`Repo set to: ${name}`);
+        showGlobalToast(`Switched to: ${fullName}${cfg.projectType ? ' (' + cfg.projectType + ')' : ''}`);
     }
 
     async function executeSendFiles(targetRepo, targetIsOrg) {
         const checked = Array.from(document.querySelectorAll('#file-list-container .file-check:checked')).map(c => c.value);
-        if (!confirm(`🚀 Send ${checked.length} files to ${targetRepo}? Existing files will be overwritten.`)) return;
+        let targetDir = document.getElementById('repo-target-path').value.trim();
+        if (targetDir && !targetDir.endsWith('/')) targetDir += '/';
+
+        const msg = `🚀 Send ${checked.length} files to ${targetRepo}${targetDir ? ' (Folder: ' + targetDir + ')' : ''}? Existing files will be overwritten.`;
+        if (!confirm(msg)) return;
 
         closeRepoSelector();
         showGlobalToast("📦 Gathering files...");
 
         try {
-            const operations = [{ action: 'comment', text: `[Inbound] Transfer from ${CONFIG.repoName}` }];
+            const operations = [{ action: 'comment', text: `[Inbound] Transfer from ${CONFIG.repoName}${targetDir ? ' to ' + targetDir : ''}` }];
             
             for (const path of checked) {
-                const res = await fetch(CONFIG.funcUrl, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: apiBody({ action: 'preview_file', file_path: path })
-                });
-                const data = await res.json();
+                let data;
+                if (CONFIG.ghToken) {
+                    data = await githubRequest(`/contents/${path}?ref=conduit-dev`);
+                } else {
+                    const res = await fetch(CONFIG.funcUrl, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: apiBody({ action: 'preview_file', file_path: path })
+                    });
+                    data = await res.json();
+                }
+
                 if (data.content) {
                     operations.push({
                         action: 'create_file',
-                        file_path: path,
+                        file_path: targetDir + path,
                         content: b64DecodeUnicode(data.content)
                     });
                 }
@@ -7169,6 +7503,7 @@ async function downloadArtifact(runId) {
         // Reset state for next use
         document.getElementById('repo-selector-title').innerText = "Select Repository";
         document.getElementById('repo-type-toggle').style.display = 'none';
+        document.getElementById('repo-send-params').style.display = 'none';
         repoSelectorMode = 'settings';
     }
 
@@ -7374,43 +7709,59 @@ async function downloadArtifact(runId) {
             });
 
         if (checked.length === 0) return showGlobalToast("No textual files selected", true);
+        if (!CONFIG.ghToken) return alert("Direct Bridge requires a GitHub Token in Settings to bypass Supabase egress.");
         
         if (isPerformingAction) return;
         isPerformingAction = true;
 
         const btn = document.getElementById('btn-context-copy');
         const originalHtml = btn.innerHTML;
-        btn.innerHTML = "⏳ Fetching...";
+        btn.innerHTML = "⏳ GH Bridge...";
         
         try {
             const fetchedFiles = [];
-            const BATCH_SIZE = 8;
+            const BATCH_SIZE = 10; // GitHub API handles high concurrency well
             
             for (let i = 0; i < checked.length; i += BATCH_SIZE) {
                 const batch = checked.slice(i, i + BATCH_SIZE);
-                showGlobalToast(`⚡ Copying: ${i + 1}-${Math.min(i + BATCH_SIZE, checked.length)} of ${checked.length}...`);
+                showGlobalToast(`Direct GH Fetch: ${i + 1}-${Math.min(i + BATCH_SIZE, checked.length)} of ${checked.length}...`);
 
                 const batchResults = await Promise.all(batch.map(async (path) => {
-                    const res = await fetch(CONFIG.funcUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: apiBody({ action: 'preview_file', file_path: path })
-                    });
-                    const data = await res.json();
-                    if (!data.content) return null;
-                    return { path, content: b64DecodeUnicode(data.content) };
+                    try {
+                        const data = await githubRequest(`/contents/${path}?ref=conduit-dev`);
+                        if (!data.content) return null;
+                        return { path, content: b64DecodeUnicode(data.content) };
+                    } catch (e) { return null; }
                 }));
 
                 fetchedFiles.push(...batchResults.filter(f => f !== null));
             }
 
-            const text = fetchedFiles.map(f => CONFIG.omitHeaders ? f.content : `FILE: ${f.path}\n${f.content}`).join('\n\n');
-            await navigator.clipboard.writeText(text);
-            
-            btn.innerHTML = "✔ Copied!";
-            btn.style.color = "var(--prod)";
-            btn.style.borderColor = "var(--prod)";
-            showGlobalToast(`Successfully copied ${fetchedFiles.length} files`);
+            const text = fetchedFiles.map(f => `FILE: ${f.path}\n${f.content}`).join('\n\n');
+            const blob = new Blob([text], { type: 'text/plain' });
+            const sizeMB = (blob.size / (1024 * 1024)).toFixed(2);
+
+            try {
+                // Use advanced Clipboard API for large data handling
+                if (navigator.clipboard && window.ClipboardItem) {
+                    const data = [new ClipboardItem({ [blob.type]: blob })];
+                    await navigator.clipboard.write(data);
+                } else {
+                    await navigator.clipboard.writeText(text);
+                }
+                
+                btn.innerHTML = "✔ " + sizeMB + "MB";
+                btn.style.color = "var(--prod)";
+                btn.style.borderColor = "var(--prod)";
+                showGlobalToast(`[GH Bridge] Copied ${fetchedFiles.length} files (${sizeMB} MB)`);
+            } catch (clipErr) {
+                console.warn("Clipboard transfer failed, falling back to download.", clipErr);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `context_dump_${sizeMB}MB.txt`;
+                a.click();
+                showGlobalToast(`Clipboard limit reached. Downloaded as .txt instead (${sizeMB}MB)`, true);
+            }
             
             setTimeout(() => {
                 btn.innerHTML = originalHtml;
@@ -7419,7 +7770,7 @@ async function downloadArtifact(runId) {
             }, 2000);
 
         } catch (e) {
-            showGlobalToast("Copy failed: " + e.message, true);
+            showGlobalToast("Direct Copy failed: " + e.message, true);
             btn.innerHTML = originalHtml;
         } finally {
             isPerformingAction = false;
@@ -7427,10 +7778,20 @@ async function downloadArtifact(runId) {
     }
 
     async function processExport(type) {
-        const checked = Array.from(document.querySelectorAll('#file-list-container .file-check:checked')).map(c => c.value);
+        let checked = Array.from(document.querySelectorAll('#file-list-container .file-check:checked')).map(c => c.value);
         const statusEl = document.getElementById('export-status');
         
         if (checked.length === 0) return alert("No files selected.");
+
+        // Parity with Global Copy: Filter binaries for TXT mode
+        if (type === 'txt') {
+            const binaryExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'webp', 'mp4', 'mov', 'webm', 'zip', 'pdf', 'woff', 'woff2', 'ttf', 'otf', 'exe', 'apk'];
+            checked = checked.filter(path => {
+                const ext = path.split('.').pop().toLowerCase();
+                return !binaryExtensions.includes(ext);
+            });
+            if (checked.length === 0) return alert("No textual files found in selection to merge.");
+        }
 
         if (exportController) exportController.abort(); 
         exportController = new AbortController();
@@ -7476,7 +7837,7 @@ async function downloadArtifact(runId) {
                 link.download = `${finalBaseName}.zip`;
                 link.click();
             } else {
-                const text = fetchedFiles.map(f => CONFIG.omitHeaders ? f.content : `FILE: ${f.path}\n${f.content}`).join('\n\n');
+                const text = fetchedFiles.map(f => `FILE: ${f.path}\n${f.content}`).join('\n\n');
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
                 link.download = `${finalBaseName}.txt`;
@@ -7503,12 +7864,10 @@ async function downloadArtifact(runId) {
 
     function toggleAceSearch() {
         const bar = document.getElementById('ace-search-bar');
-        const title = document.getElementById('viewer-filename');
         const input = document.getElementById('ace-search-input');
         
         if (bar.style.display === 'none') {
             bar.style.display = 'flex';
-            title.style.display = 'none';
             input.focus();
             if (aceEditorInstance) {
                 const selected = aceEditorInstance.getSelectedText();
@@ -7516,7 +7875,6 @@ async function downloadArtifact(runId) {
             }
         } else {
             bar.style.display = 'none';
-            title.style.display = 'block';
             if (aceEditorInstance) aceEditorInstance.selection.clearSelection();
         }
     }
@@ -7862,8 +8220,19 @@ async function downloadArtifact(runId) {
 
     async function pasteToEditor() {
         try {
-            const text = await navigator.clipboard.readText();
-            document.getElementById('json-input').value = text;
+            let text = await navigator.clipboard.readText();
+            if (!text) return;
+
+            // Apply immediate healing on paste for UX
+            try {
+                // Use the new smart parser logic but just for formatting
+                const healed = smartJSONParse(text);
+                document.getElementById('json-input').value = JSON.stringify(healed, null, 2);
+            } catch(e) {
+                // If healer fails, paste raw so user can see the mess
+                document.getElementById('json-input').value = text;
+            }
+            
             saveState();
         } catch (e) {
             alert("Failed to read clipboard: " + e.message);
@@ -8357,7 +8726,16 @@ async function downloadArtifact(runId) {
 
     // --- SQL EXECUTOR LOGIC ---
     const SQL_CONFIG = {
-        URL: 'https://xvldfsmxskhemkslsbym.supabase.co/functions/v1/sql-executor',
+        get URL() {
+            if (!CONFIG.funcUrl) return '';
+            const base = CONFIG.funcUrl.substring(0, CONFIG.funcUrl.lastIndexOf('/') + 1);
+            return base + 'sql-executor';
+        },
+        get REST_BASE() {
+            if (!CONFIG.funcUrl) return '';
+            const match = CONFIG.funcUrl.match(/^https:\/\/[^/]+/);
+            return match ? match[0] : '';
+        },
         ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2bGRmc214c2toZW1rc2xzYnltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI2ODgxNzksImV4cCI6MjA3ODI2NDE3OX0.5arqrx8Tt7v-hpXpo_ncoK4IX8th9IibxAuv93SSoOU'
     };
     let lastSqlResultData = null;
@@ -8991,8 +9369,8 @@ async function downloadArtifact(runId) {
         try {
             let keys = [];
             if (source === 'database') {
-                const SB_URL = "https://xvldfsmxskhemkslsbym.supabase.co";
-                const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2bGRmc214c2toZW1rc2xzYnltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI2ODgxNzksImV4cCI6MjA3ODI2NDE3OX0.5arqrx8Tt7v-hpXpo_ncoK4IX8th9IibxAuv93SSoOU";
+                const SB_URL = SQL_CONFIG.REST_BASE;
+                const SB_KEY = SQL_CONFIG.ANON;
                 const res = await fetch(SB_URL + '/rest/v1/api_keys?service=eq.gemini&select=*', { headers: { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY } });
                 keys = await res.json();
             } else {
@@ -9183,3 +9561,4 @@ async function downloadArtifact(runId) {
 </body>
     
 </html>
+
